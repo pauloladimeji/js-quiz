@@ -47,6 +47,8 @@ var EventUtil = {
 
 var Quiz = (function(){
 
+	var questionTitle, choices, choice, pos = 0, myCorrectAnswer, correct = 0;
+
 	var allQuestions = [
 		{
 			question: "Who is the Prime Minister of the UK?",
@@ -71,13 +73,21 @@ var Quiz = (function(){
 		{
 			question: "What is the chemical symbol for Iron?",
 			choices: ["Fe", "Ir", "Ca"],
-			correctAnswer: 1
+			correctAnswer: 0
 		}
 	];
 
 	function displaySingleQuestion(currentQuestion) {
+		if (pos >= allQuestions.length) {
+			_("quiz-app-container").innerHTML = "";
+			_("quiz-app-container").innerHTML = "Quiz over. You got " + correct + " questions right!";
 
-		var questionTitle = currentQuestion.question;
+			pos = 0;
+			correct = 0;
+			return false;
+		}
+
+		questionTitle = currentQuestion.question;
 
 		_("question-title").appendChild( document.createTextNode(questionTitle) );
 
@@ -88,19 +98,66 @@ var Quiz = (function(){
 			displayed_choices.setAttribute("type", "radio");
 			displayed_choices.setAttribute("name", "choices");
 
+			displayed_choices.value = j;
+
 			displayed_choices.parentNode.insertBefore(document.createTextNode(currentQuestion.choices[j]), displayed_choices.nextSibling);
 
 			//console.log(choices);
 		}
 	}
 
-	
+	function removeQuestionDOMMethod() {
+		//using DOM methods??
+		_("question-title").removeChild(_("question-title").firstChild);
+
+		var choices_container = _("choices");
+
+		while(choices_container.firstChild){
+			choices_container.removeChild(choices_container.firstChild);
+		}
+	}
+
+	function removeQuestioninnerHTML() {
+		//using innerHTML
+		_("question-title").innerHTML = "";
+
+		_("choices").innerHTML = "";
+	}
+
+	function checkAnswer() {
+		choices = document.getElementsByName("choices");
+
+		for (var i = 0; i < choices.length; i++) {
+			if (choices[i].checked) {
+				choice = parseInt(choices[i].value, 10);
+			}
+		}
+
+		myCorrectAnswer = allQuestions[pos].correctAnswer;
+		if (choice == myCorrectAnswer) {
+			correct++;
+		}
+		console.log("Correct " + correct);	
+
+		removeQuestionDOMMethod();
+		pos++;
+		displaySingleQuestion(allQuestions[pos]);
+
+		return correct;	
+	}
+
+
+
+	EventUtil.addHandler(_("submit-button"), "click", function() {
+		//console.log(pos);
+		checkAnswer();
+	});
 
 	//displaySingleQuestion(allQuestions[0]);
 
 
 	
-	window.addEventListener("load", displaySingleQuestion(allQuestions[0]), false);
+	window.addEventListener("load", displaySingleQuestion(allQuestions[pos]), false);
 	//EventUtil.addHandler(_("submit-button"), "click", displaySingleQuestion(allQuestions));
 
 })();
